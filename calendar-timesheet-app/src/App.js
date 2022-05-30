@@ -3,21 +3,20 @@ import InteractiveExports from './components/InteractiveExports'
 import ICAL from 'ical.js'
 import TEST_VAL from './testData'
 import FilesDragAndDrop from './components/FilesDragAndDrop'
+import TimeSheetDataGrid from "./components/TimeSheetDataGrid";
 
-let getJCal = () => {
+let getJCal = (icsFile) => {
   var now = ICAL.Time.now() // TODO: make this variable
-  var jcalData = ICAL.parse(TEST_VAL)
+  var jcalData = ICAL.parse(icsFile)
   var comp = new ICAL.Component(jcalData)
   var vevents = comp.getAllSubcomponents("vevent")
   var jcalEvents = vevents.map(vevent => new ICAL.Event(vevent))
 
-  console.log(jcalEvents)
   var eventRows = jcalEvents.reduce((result, jcalEvent) => {
     if (!jcalEvent.isRecurring()) {
       if (jcalEvent.startDate.compare(now.startOfMonth()) >= 0 && jcalEvent.endDate.compare(now.endOfMonth() <= 0)) {
         let durationPerDay = { [jcalEvent.startDate.day]: jcalEvent.duration }
         result.push({ name: jcalEvent.summary, durationPerDay })
-        console.log("not recurr", result);
       }
       return result
     }
@@ -33,14 +32,17 @@ let getJCal = () => {
     return result
   }, [])
 
-  console.log(eventRows);
   return eventRows
 }
 
 function App() {
   const [showTable, setShowTable] = useState(false)
-  const onUpload = (files) => {
-    console.log(files);
+  const [icsFile, setIcsFile] = useState("")
+  const onUpload = (content) => {
+    const reader = new FileReader();
+    if (content) {
+      setIcsFile(content)
+    }
     setShowTable(!showTable)
   }
 
@@ -63,7 +65,18 @@ function App() {
             </span>
           </div>
         </FilesDragAndDrop>}
-      {showTable && <InteractiveExports events={getJCal()} />}
+      {showTable && <InteractiveExports events={getJCal(icsFile)} />}
+      {showTable && <TimeSheetDataGrid
+        events={getJCal(icsFile)}
+        year={new Date().getFullYear()} month={new Date().getMonth()} /* TODO: don't hardcode year and month */
+        headers={ /* TODO: don't hardcode header data */
+          [
+            { name: "Name", defaultValue: "Aaron Chiu" },
+            { name: "Country", defaultValue: "Canada" },
+            { name: "Ticket Number" },
+            { name: "Ticket Title", }
+          ]
+        } />}
     </div>
   );
 }

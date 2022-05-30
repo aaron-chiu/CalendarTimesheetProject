@@ -5,12 +5,13 @@ import './FilesDragAndDrop.scss'
 export default function FilesDragAndDrop({ onUpload, children, count, formats }) {
     const drop = React.useRef(null);
     React.useEffect(() => {
-        drop.current.addEventListener('dragover', handleDragOver);
-        drop.current.addEventListener('drop', handleDrop);
+        const instance = drop.current;
+        instance.addEventListener('dragover', handleDragOver);
+        instance.addEventListener('drop', handleDrop);
 
         return () => {
-            drop.current.removeEventListener('dragover', handleDragOver);
-            drop.current.removeEventListener('drop', handleDrop);
+            instance.removeEventListener('dragover', handleDragOver);
+            instance.removeEventListener('drop', handleDrop);
         };
     }, []);
 
@@ -39,7 +40,11 @@ export default function FilesDragAndDrop({ onUpload, children, count, formats })
         }
 
         if (files && files.length) {
-            onUpload(files);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                onUpload(e.target.result);
+            };
+            reader.readAsText(files[0]);
         }
     };
 

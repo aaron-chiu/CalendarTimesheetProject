@@ -14,7 +14,7 @@ let getJCal = (icsFile) => {
 
   var eventRows = jcalEvents.reduce((result, jcalEvent) => {
     if (!jcalEvent.isRecurring()) {
-      if (jcalEvent.startDate.compare(now.startOfMonth()) >= 0 && jcalEvent.endDate.compare(now.endOfMonth() <= 0)) {
+      if (jcalEvent.startDate.compare(now.startOfMonth()) >= 0 && jcalEvent.endDate.compare(now.endOfMonth()) <= 0) {
         let durationPerDay = { [jcalEvent.startDate.day]: jcalEvent.duration }
         result.push({ name: jcalEvent.summary, durationPerDay })
       }
@@ -28,10 +28,13 @@ let getJCal = (icsFile) => {
         durationPerDay[next.day] = jcalEvent.duration.toSeconds() / 60 / 60
       }
     }
-    result.push({ name: jcalEvent.summary, durationPerDay })
+    if (Object.keys(durationPerDay).length > 0) {
+      result.push({ name: jcalEvent.summary, durationPerDay })
+    }
     return result
   }, [])
 
+  console.log(eventRows);
   return eventRows
 }
 
@@ -69,14 +72,7 @@ function App() {
       {showTable && <TimeSheetDataGrid
         events={getJCal(icsFile)}
         year={new Date().getFullYear()} month={new Date().getMonth()} /* TODO: don't hardcode year and month */
-        headers={ /* TODO: don't hardcode header data */
-          [
-            { name: "Name", defaultValue: "Aaron Chiu" },
-            { name: "Country", defaultValue: "Canada" },
-            { name: "Ticket Number" },
-            { name: "Ticket Title", }
-          ]
-        } />}
+      />}
     </div>
   );
 }
